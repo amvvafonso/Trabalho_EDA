@@ -77,7 +77,6 @@ public class Predict {
 
     public List<String> suggest(String prefix, int limit) {
         prefix = prefix.toLowerCase();
-        long start = System.nanoTime();
 
         if (prefix.isEmpty())
             return new ArrayList<>();
@@ -106,7 +105,6 @@ public class Predict {
             }
         }
 
-        System.out.println("Tempo de procura -> " + (System.nanoTime() - start) + " ns");
         return suggestions;
     }
 

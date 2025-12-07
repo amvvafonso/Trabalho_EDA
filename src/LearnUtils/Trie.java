@@ -2,10 +2,7 @@ package LearnUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 public class Trie {
     private TrieNode root;
@@ -16,9 +13,38 @@ public class Trie {
         this.limit = limit;
     }
 
+    private static final Map<Character, List<Character>> neighbors = new HashMap<>();
+
+    static {
+        neighbors.put('a', Arrays.asList('a','q','w','s','z'));
+        neighbors.put('s', Arrays.asList('s','a','w','d','z'));
+        neighbors.put('d', Arrays.asList('d','e','s','x','f'));
+        neighbors.put('g', Arrays.asList('g','f','t','h','v'));
+        neighbors.put('h', Arrays.asList('h','g','y','j','b'));
+        neighbors.put('j', Arrays.asList('j','h','u','k','n'));
+        neighbors.put('k', Arrays.asList('k','j','i','l','m'));
+        neighbors.put('l', Arrays.asList('l','k','o','p','m'));
+        neighbors.put('o', Arrays.asList('o','i','p','k','l'));
+        neighbors.put('q', Arrays.asList('q','a','w'));
+        neighbors.put('w', Arrays.asList('w','q','s','d'));
+        neighbors.put('e', Arrays.asList('e','w','d','r'));
+        neighbors.put('r', Arrays.asList('r','e','d', 'f','r'));
+        neighbors.put('t', Arrays.asList('t','r','g', 'f','y'));
+        neighbors.put('y', Arrays.asList('y','t','g', 'h','u'));
+        neighbors.put('u', Arrays.asList('u','y','h', 'j','i'));
+        neighbors.put('i', Arrays.asList('i','u','j', 'k','o'));
+        neighbors.put('z', Arrays.asList('z','s','x'));
+        neighbors.put('x', Arrays.asList('x','z','d', 'c'));
+        neighbors.put('c', Arrays.asList('c','x','f', 'v'));
+        neighbors.put('v', Arrays.asList('v','c','g', 'b'));
+        neighbors.put('b', Arrays.asList('b','v','h', 'n'));
+        neighbors.put('n', Arrays.asList('n','b','j', 'm'));
+        neighbors.put('m', Arrays.asList('m','n','k', 'm'));
+    }
+
+
     public void learn(File file){
-        int counter = 0;
-        long startTime = System.nanoTime();
+
         String sentence = "";
         try (Scanner myReader = new Scanner(file)) {
             while (myReader.hasNextLine()) {
@@ -33,12 +59,36 @@ public class Trie {
         String[] words = sentence.split("\\W+");
         for (String c : words) {
             this.insert(c);
-            counter++;
         }
-        System.out.println("Inseridos " + counter + "caracteres \n");
-        System.out.println("Demorou -> " + (System.nanoTime() - startTime) / 1000000 + "ms");
+
 
     }
+
+
+    public List<String> fuzzyAutocomplete(String prefix) {
+        List<String> results = new ArrayList<>();
+        if (prefix.isEmpty()) return results;
+
+        // Get the first character's neighbors
+        char first = Character.toLowerCase(prefix.charAt(0));
+        List<Character> candidates = neighbors.getOrDefault(first, Arrays.asList(first));
+
+        // Try each candidate as the first letter
+        for (char c : candidates) {
+            if (results.size() >= limit) break; // stop if we already have 3 suggestions
+            String newPrefix = c + prefix.substring(1);
+            List<String> partial = autocomplete(newPrefix); // your existing Trie method
+            for (String word : partial) {
+                if (results.size() >= limit) break;
+                if (!results.contains(word)) {
+                    results.add(word);
+                }
+            }
+        }
+
+        return results;
+    }
+
 
 
     // Insert a word into the trie
@@ -63,18 +113,32 @@ public class Trie {
     // Find all words with a given prefix
     public List<String> autocomplete(String prefix) {
         List<String> results = new ArrayList<>();
-        TrieNode node = root;
-        long start = System.nanoTime();
-        // Traverse to the end of the prefix
-        for (char c : prefix.toCharArray()) {
-            node = node.children.get(c);
-            if (node == null) return results; // no words with this prefix
+
+        // Try decreasing prefixes until we find matches
+        for (int len = prefix.length(); len >= 0; len--) {
+            String subPrefix = prefix.substring(0, len);
+            TrieNode node = root;
+
+            // Traverse to the end of subPrefix
+            boolean exists = true;
+            for (char c : subPrefix.toCharArray()) {
+                node = node.children.get(c);
+                if (node == null) {
+                    exists = false;
+                    break;
+                }
+            }
+
+            if (exists) {
+                // Found a node, get all words starting from here
+                dfs(node, new StringBuilder(subPrefix), results);
+                if (!results.isEmpty()) {
+                    return results; // return as soon as we find some matches
+                }
+            }
         }
 
-        // Recursively find all words starting from this node
-        dfs(node, new StringBuilder(prefix), results);
-        System.out.println("Demorou -> " + (System.nanoTime() - start));
-        return results;
+        return fuzzyAutocomplete(prefix);
     }
 
     // Depth-first search helper
