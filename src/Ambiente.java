@@ -1,5 +1,5 @@
-import LearnUtils.Predict;
 import LearnUtils.Trie;
+import LearnUtils.WordTree;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -15,6 +15,7 @@ import java.util.List;
 public class Ambiente extends JFrame {
 
     private Trie trie;
+    private WordTree tree;
 
     private JLabel resultTime;
     private JTextArea trieTextArea;
@@ -23,7 +24,7 @@ public class Ambiente extends JFrame {
     private JPanel optionPanel;
     private JButton trieOption;
     private JButton treeOption;
-    private Predict tree;
+
     public String type = "";
 
 
@@ -33,7 +34,7 @@ public class Ambiente extends JFrame {
         trie = new Trie(3);
         trie.learn(new File("src/Assets/FeedingText.txt"));
 
-        tree = new Predict();
+        tree = new WordTree();
         tree.learn(new File("src/Assets/FeedingText.txt"));
 
 
@@ -41,6 +42,7 @@ public class Ambiente extends JFrame {
         this.setTitle("Ambiente");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setSize(400, 400);
+        this.setResizable(false);
 
         optionPanel = new JPanel();
         optionPanel.setLayout(new GridLayout(1, 2));
@@ -61,6 +63,8 @@ public class Ambiente extends JFrame {
         treeOption = new JButton("Tree");
         treeOption.setOpaque(true);
         treeOption.setBorder(new LineBorder(Color.LIGHT_GRAY));
+        treeOption.setBackground(Color.white);
+        trieOption.setBackground(Color.LIGHT_GRAY);
 
         treeOption.addActionListener(new ActionListener() {
             @Override
@@ -70,6 +74,11 @@ public class Ambiente extends JFrame {
                 type = "tree";
             }
         });
+        JLabel title = new JLabel("Selecione -> ");
+        title.setFont(new Font("Arial", Font.BOLD, 20));
+        title.setSize(this.getWidth(), 10);
+
+        optionPanel.add(title);
         optionPanel.add(trieOption);
         optionPanel.add(treeOption);
 
@@ -92,6 +101,7 @@ public class Ambiente extends JFrame {
         suggestionPanel = new JPanel();
         suggestionPanel.setLayout(new GridLayout(1, 3));
         suggestionPanel.setSize(this.getWidth(), 50);
+
 
         this.add(optionPanel);
         this.add(resultTime);
@@ -139,9 +149,6 @@ public class Ambiente extends JFrame {
                 return;
             }
             switch (type){
-                case "trie":
-                    suggestions = trie.autocomplete(text[text.length-1]);
-                    break;
                 case "tree":
                     suggestions = tree.suggest(text[text.length-1], 3);
                     break;

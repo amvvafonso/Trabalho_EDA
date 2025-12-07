@@ -1,5 +1,7 @@
 package LearnUtils;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.*;
 
 public class WordTree {
@@ -21,8 +23,116 @@ public class WordTree {
         return root;
     }
 
+    public void learn(File file) {
+        try (Scanner myReader = new Scanner(file)) {
+            while (myReader.hasNextLine()) {
+                String data = myReader.nextLine();
+                for (String word : data.toLowerCase().split("\\W+")) {
+                    if (!word.isEmpty()) this.insert(word);
+                }
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+
+    }
+
+    private static final Map<Character, List<Character>> neighbors = new HashMap<>();
+
+    static {
+        neighbors.put('a', Arrays.asList('a','q','w','s','z'));
+        neighbors.put('s', Arrays.asList('s','a','w','d','z'));
+        neighbors.put('d', Arrays.asList('d','e','s','x','f'));
+        neighbors.put('g', Arrays.asList('g','f','t','h','v'));
+        neighbors.put('h', Arrays.asList('h','g','y','j','b'));
+        neighbors.put('j', Arrays.asList('j','h','u','k','n'));
+        neighbors.put('k', Arrays.asList('k','j','i','l','m'));
+        neighbors.put('l', Arrays.asList('l','k','o','p','m'));
+        neighbors.put('o', Arrays.asList('o','i','p','k','l'));
+        neighbors.put('q', Arrays.asList('q','a','w'));
+        neighbors.put('w', Arrays.asList('w','q','s','d'));
+        neighbors.put('e', Arrays.asList('e','w','d','r'));
+        neighbors.put('r', Arrays.asList('r','e','d', 'f','r'));
+        neighbors.put('t', Arrays.asList('t','r','g', 'f','y'));
+        neighbors.put('y', Arrays.asList('y','t','g', 'h','u'));
+        neighbors.put('u', Arrays.asList('u','y','h', 'j','i'));
+        neighbors.put('i', Arrays.asList('i','u','j', 'k','o'));
+        neighbors.put('z', Arrays.asList('z','s','x'));
+        neighbors.put('x', Arrays.asList('x','z','d', 'c'));
+        neighbors.put('c', Arrays.asList('c','x','f', 'v'));
+        neighbors.put('v', Arrays.asList('v','c','g', 'b'));
+        neighbors.put('b', Arrays.asList('b','v','h', 'n'));
+        neighbors.put('n', Arrays.asList('n','b','j', 'm'));
+        neighbors.put('m', Arrays.asList('m','n','k', 'm'));
+    }
+
+    private boolean matchNeighbor(String prefix, String word) {
+        if (prefix.length() > word.length())
+            return false;
+
+        for (int i = 0; i < prefix.length(); i++) {
+            char typedChar = prefix.charAt(i);
+            char wordChar = word.charAt(i);
+
+            List<Character> validChars = neighbors.get(typedChar);
+
+            if (validChars == null)
+                validChars = Arrays.asList(typedChar);
+
+            if (!validChars.contains(wordChar))
+                return false;
+        }
+
+        return true;
+    }
+
+    public List<String> suggest(String prefix, int limit) {
+        prefix = prefix.toLowerCase();
+
+        if (prefix.isEmpty())
+            return new ArrayList<>();
+
+        List<WordNode> allWords = this.searchAll(prefix);
+        List<WordNode> filtered = new ArrayList<>();
 
 
+        for (WordNode node : allWords) {
+            if (matchNeighbor(prefix, node.word)) {
+                filtered.add(node);
+            }
+        }
+
+        // Ordenar por frequência (maior primeiro)
+        filtered.sort((a, b) -> Integer.compare(b.frequency, a.frequency));
+
+        // Criar lista final de palavras
+        List<String> suggestions = new ArrayList<>();
+        for (int i = 0; i < filtered.size(); i++) {
+            if (filtered.get(i).word.equals(prefix) || filtered.get(i).word.compareTo(prefix) > 0) {
+                suggestions.add(filtered.get(i).word);
+            }
+            else {
+                suggestions.add(filtered.get(i).word);
+            }
+        }
+
+        String finalPrefix = prefix;
+        return suggestions.stream()
+                .distinct() // remove duplicados
+                .sorted((a, b) -> {
+                    boolean aStarts = a.toLowerCase().startsWith(finalPrefix.toLowerCase());
+                    boolean bStarts = b.toLowerCase().startsWith(finalPrefix.toLowerCase());
+
+                    if (aStarts && !bStarts) return -1;
+                    if (!aStarts && bStarts) return 1;
+
+                    return a.compareToIgnoreCase(b);
+                })
+                .limit(3)
+                .toList();
+
+    }
 
     public List<WordNode> searchAll(String prefix) {
         List<WordNode> list = new ArrayList<>();
@@ -38,17 +148,4 @@ public class WordTree {
         collect(node.right, list, prefix);
     }
 
-    public void searchPrefixRec(WordNode node, String prefix, List<WordNode> list) {
-        if (node == null) return;
-
-        if (node.word.startsWith(prefix))
-            list.add(node);
-
-
-        if (prefix.compareTo(node.word) <= 0)
-            searchPrefixRec(node.left, prefix, list);
-
-        if (prefix.compareTo(node.word) >= 0)
-            searchPrefixRec(node.right, prefix, list);
-    }
 }

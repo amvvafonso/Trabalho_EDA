@@ -5,7 +5,8 @@ import java.io.FileNotFoundException;
 import java.util.*;
 
 public class Trie {
-    private TrieNode root;
+
+    private final TrieNode root;
     public int limit;
 
     public Trie(int limit) {
@@ -69,15 +70,15 @@ public class Trie {
         List<String> results = new ArrayList<>();
         if (prefix.isEmpty()) return results;
 
-        // Get the first character's neighbors
+        // Obtem as letras vizinhas
         char first = Character.toLowerCase(prefix.charAt(0));
         List<Character> candidates = neighbors.getOrDefault(first, Arrays.asList(first));
 
-        // Try each candidate as the first letter
+        // Tenta encontrar palavras a partir dos vizinhos
         for (char c : candidates) {
-            if (results.size() >= limit) break; // stop if we already have 3 suggestions
+            if (results.size() >= limit) break;
             String newPrefix = c + prefix.substring(1);
-            List<String> partial = autocomplete(newPrefix); // your existing Trie method
+            List<String> partial = autocomplete(newPrefix);
             for (String word : partial) {
                 if (results.size() >= limit) break;
                 if (!results.contains(word)) {
@@ -91,7 +92,7 @@ public class Trie {
 
 
 
-    // Insert a word into the trie
+    // Insere a palavra
     public void insert(String word) {
         TrieNode node = root;
         for (char c : word.toCharArray()) {
@@ -100,7 +101,7 @@ public class Trie {
         node.isWord = true;
     }
 
-    // Search for an exact word
+    // Retorna true se existir a palavra
     public boolean search(String word) {
         TrieNode node = root;
         for (char c : word.toCharArray()) {
@@ -110,16 +111,14 @@ public class Trie {
         return node.isWord;
     }
 
-    // Find all words with a given prefix
     public List<String> autocomplete(String prefix) {
         List<String> results = new ArrayList<>();
 
-        // Try decreasing prefixes until we find matches
         for (int len = prefix.length(); len >= 0; len--) {
             String subPrefix = prefix.substring(0, len);
             TrieNode node = root;
 
-            // Traverse to the end of subPrefix
+
             boolean exists = true;
             for (char c : subPrefix.toCharArray()) {
                 node = node.children.get(c);
@@ -130,20 +129,19 @@ public class Trie {
             }
 
             if (exists) {
-                // Found a node, get all words starting from here
                 dfs(node, new StringBuilder(subPrefix), results);
                 if (!results.isEmpty()) {
-                    return results; // return as soon as we find some matches
+                    return results; // Retorna o resultado
                 }
             }
         }
 
-        return fuzzyAutocomplete(prefix);
+        return fuzzyAutocomplete(prefix); // caso nao encontre nenhum, retorna a contar com as letras a volta
     }
 
-    // Depth-first search helper
+    // Depth-first search
     private void dfs(TrieNode node, StringBuilder prefix, List<String> results) {
-        if (results.size() > limit) return;
+        if (results.size() >= limit) return;
         if (node.isWord) results.add(prefix.toString());
         for (Map.Entry<Character, TrieNode> entry : node.children.entrySet()) {
             prefix.append(entry.getKey());
