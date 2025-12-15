@@ -66,27 +66,32 @@ public class Trie {
     }
 
 
-    public List<String> fuzzyAutocomplete(String prefix) {
+    public List<String> missspelledAutocomplete(String prefix) {
         List<String> results = new ArrayList<>();
+
         if (prefix.isEmpty()) return results;
 
         // Obtem as letras vizinhas
         char first = Character.toLowerCase(prefix.charAt(0));
+
         List<Character> candidates = neighbors.getOrDefault(first, Arrays.asList(first));
 
         // Tenta encontrar palavras a partir dos vizinhos
         for (char c : candidates) {
             if (results.size() >= limit) break;
+
             String newPrefix = c + prefix.substring(1);
+
             List<String> partial = autocomplete(newPrefix);
+
             for (String word : partial) {
                 if (results.size() >= limit) break;
+
                 if (!results.contains(word)) {
                     results.add(word);
                 }
             }
         }
-
         return results;
     }
 
@@ -115,7 +120,9 @@ public class Trie {
         List<String> results = new ArrayList<>();
 
         for (int len = prefix.length(); len >= 0; len--) {
+
             String subPrefix = prefix.substring(0, len);
+
             TrieNode node = root;
 
 
@@ -136,7 +143,7 @@ public class Trie {
             }
         }
 
-        return fuzzyAutocomplete(prefix); // caso nao encontre nenhum, retorna a contar com as letras a volta
+        return missspelledAutocomplete(prefix); // caso nao encontre nenhum, retorna a contar com as letras a volta
     }
 
     // Depth-first search

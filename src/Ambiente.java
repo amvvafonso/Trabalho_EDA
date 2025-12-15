@@ -153,7 +153,8 @@ public class Ambiente extends JFrame {
                     suggestions = tree.suggest(text[text.length-1], 3);
                     break;
                 default:
-                    suggestions = trie.autocomplete(text[text.length-1]);
+                    suggestions = trie.missspelledAutocomplete(text[text.length-1]);
+                    System.out.println(suggestions);
                     break;
             }
         }
