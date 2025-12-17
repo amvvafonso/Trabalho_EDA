@@ -27,8 +27,9 @@ public class WordTree {
         try (Scanner myReader = new Scanner(file)) {
             while (myReader.hasNextLine()) {
                 String data = myReader.nextLine();
-                for (String word : data.toLowerCase().split("\\W+")) {
+                for (String word : data.toLowerCase().split("[^\\p{L}]+")) {
                     if (!word.isEmpty()) this.insert(word);
+
                 }
             }
         } catch (FileNotFoundException e) {
@@ -98,9 +99,7 @@ public class WordTree {
 
 
         for (WordNode node : allWords) {
-            if (matchNeighbor(prefix, node.word)) {
-                filtered.add(node);
-            }
+            filtered.add(node);
         }
 
         // Ordenar por frequência (maior primeiro)
@@ -136,7 +135,6 @@ public class WordTree {
 
     private void collect(WordNode node, List<WordNode> list, String prefix) {
         if (node == null) return;
-        if(prefix.compareTo(node.word) >= 0) list.add(node);
         collect(node.left, list, prefix);
         list.add(node);
         collect(node.right, list, prefix);

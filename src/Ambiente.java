@@ -16,7 +16,7 @@ public class Ambiente extends JFrame {
 
     private Trie trie;
     private WordTree tree;
-
+    private int limit;
     private JLabel resultTime;
     private JTextArea trieTextArea;
     private PhoneKeyboardPanel phoneKeyboardPanel;
@@ -29,7 +29,9 @@ public class Ambiente extends JFrame {
 
 
 
-    public Ambiente() {
+    public Ambiente(int limit) {
+
+        this.limit = limit;
 
         trie = new Trie();
         trie.learn(new File("src/Assets/FeedingText.txt"));
@@ -160,7 +162,7 @@ public class Ambiente extends JFrame {
                     break;
                 default:
                     startTime = System.nanoTime();
-                    suggestions = trie.missspelledAutocomplete(text[text.length-1] , 20);
+                    suggestions = trie.missspelledAutocomplete(text[text.length-1] , 3);
                     System.out.println("Sugestões trie -> " + suggestions + " / Size -> " + suggestions.size());
                     resultTime.setText("Time: " + (System.nanoTime() - startTime) / 1000000 + "ms");
                     break;
@@ -195,7 +197,7 @@ public class Ambiente extends JFrame {
     }
 
     public static void main(String[] args) {
-        new Ambiente();
+        new Ambiente(3);
     }
 
 

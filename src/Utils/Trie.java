@@ -55,9 +55,12 @@ public class Trie {
             e.printStackTrace();
         }
 
-        String[] words = sentence.split("\\W+");
+        String[] words = sentence.split("[^\\p{L}]+");
+
         for (String c : words) {
-            this.insert(c);
+            if (!this.search(c)){
+                this.insert(c);
+            }
         }
 
 
@@ -65,38 +68,45 @@ public class Trie {
 
 
     public List<String> missspelledAutocomplete(String prefix, int limit) {
+        prefix = prefix.toLowerCase();
         List<String> results = new ArrayList<>();
-
         if (prefix.isEmpty()) return results;
 
-        // Obtem as letras vizinhas
-        char first = Character.toLowerCase(prefix.charAt(0));
+        // Primeira letra
+        char first = prefix.charAt(0);
+        List<Character> candidates = neighbors.getOrDefault(first, List.of(first));
 
-        List<Character> candidates = neighbors.getOrDefault(first, Arrays.asList(first));
+        Set<String> seen = new HashSet<>();
 
-        // Tenta encontrar palavras a partir dos vizinhos
         for (char c : candidates) {
-            String newPrefix = c + prefix.substring(1);
+            TrieNode node = root.children.get(c);
+            if (node == null) continue;
 
-            List<String> partial = autocomplete(newPrefix, limit);
+            StringBuilder sb = new StringBuilder();
+            sb.append(c);
 
-            for (String word : partial) {
-                if (!results.contains(word)) {
-                    results.add(word);
+            // Percorre o resto
+            boolean match = true;
+            for (int i = 1; i < prefix.length(); i++) {
+                char ch = prefix.charAt(i);
+                node = node.children.get(ch);
+                if (node == null) {
+                    match = false;
+                    break;
                 }
+                sb.append(ch);
             }
+
+            if (match) {
+                dfsWithLimit(node, sb, results, seen, limit);
+            }
+
+            if (limit > 0 && results.size() >= limit) break;
         }
-        if (limit == 0) {
-            return results.stream()
-                    .distinct()
-                    .toList();
-        }
-        else {
-            return results.stream()
-                    .distinct()
-                    .limit(limit).toList();
-        }
+
+        return results;
     }
+
 
 
 
@@ -129,33 +139,40 @@ public class Trie {
             TrieNode node = root;
 
 
-            boolean exists = true;
-
-            for (char c : subPrefix.toCharArray()) {
+            for (char c : prefix.toCharArray()) {
                 node = node.children.get(c);
-                if (node == null) {
-                    exists = false;
-                    break;
-                }
+                if (node == null) return results;
             }
 
-            if (exists) {
-                dfs(node, new StringBuilder(subPrefix), results);
-                if (!results.isEmpty()) {
-                    return results; // Retorna o resultado
-                }
-            }
         }
-        return missspelledAutocomplete(prefix, limit); // caso nao encontre nenhum, retorna a contar com as letras a volta
+        return results; // caso nao encontre nenhum, retorna a contar com as letras a volta
     }
 
     // Depth-first search
-    private void dfs(TrieNode node, StringBuilder prefix, List<String> results) {
-        if (node.isWord) results.add(prefix.toString());
+    private void dfsWithLimit(TrieNode node,
+                              StringBuilder sb,
+                              List<String> results,
+                              Set<String> seen,
+                              int limit) {
+        if (limit > 0 && results.size() >= limit) return;
+
+        if (node.isWord) {
+            String word = sb.toString();
+            if (!seen.contains(word)) {
+                results.add(word);
+                seen.add(word);
+                if (limit > 0 && results.size() >= limit) return;
+            }
+        }
+
         for (Map.Entry<Character, TrieNode> entry : node.children.entrySet()) {
-            prefix.append(entry.getKey());
-            dfs(entry.getValue(), prefix, results);
-            prefix.deleteCharAt(prefix.length() - 1); // backtrack
+            sb.append(entry.getKey());
+            dfsWithLimit(entry.getValue(), sb, results, seen, limit);
+            sb.deleteCharAt(sb.length() - 1);
+
+            if (limit > 0 && results.size() >= limit) return;
         }
     }
+
+
 }
