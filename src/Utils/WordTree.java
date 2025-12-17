@@ -99,7 +99,9 @@ public class WordTree {
 
 
         for (WordNode node : allWords) {
-            filtered.add(node);
+            if (matchNeighbor(prefix, node.word)) {
+                filtered.add(node);
+            }
         }
 
         // Ordenar por frequência (maior primeiro)
