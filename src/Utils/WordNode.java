@@ -1,10 +1,10 @@
-package LearnUtils;
+package Utils;
 
 public class WordNode {
 
-    String word;
-    int frequency;
-    WordNode left, right;
+    public String word;
+    public int frequency;
+    public WordNode left, right;
 
 
     WordNode(String word) {

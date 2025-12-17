@@ -1,5 +1,5 @@
-import LearnUtils.Trie;
-import LearnUtils.WordTree;
+import Utils.Trie;
+import Utils.WordTree;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -31,7 +31,7 @@ public class Ambiente extends JFrame {
 
     public Ambiente() {
 
-        trie = new Trie(3);
+        trie = new Trie();
         trie.learn(new File("src/Assets/FeedingText.txt"));
 
         tree = new WordTree();
@@ -42,7 +42,7 @@ public class Ambiente extends JFrame {
         this.setTitle("Ambiente");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setSize(400, 400);
-        this.setResizable(false);
+        this.setResizable(true);
 
         optionPanel = new JPanel();
         optionPanel.setLayout(new GridLayout(1, 2));
@@ -101,12 +101,16 @@ public class Ambiente extends JFrame {
         suggestionPanel = new JPanel();
         suggestionPanel.setLayout(new GridLayout(1, 3));
         suggestionPanel.setSize(this.getWidth(), 50);
+        suggestionPanel.setAutoscrolls(true);
+
+        JScrollPane scrollPane = new JScrollPane(suggestionPanel);
+        scrollPane.setPreferredSize(new Dimension( this.getWidth(),50));
 
 
         this.add(optionPanel);
         this.add(resultTime);
         this.add(trieTextArea);
-        this.add(suggestionPanel);
+        this.add(scrollPane);
 
         this.add(phoneKeyboardPanel);
 
@@ -134,8 +138,7 @@ public class Ambiente extends JFrame {
     }
 
     private void updateSuggestions() {
-        long startTime = System.nanoTime();
-
+        long startTime;
         suggestionPanel.removeAll();
 
         List<String> suggestions = new ArrayList<>();
@@ -150,11 +153,16 @@ public class Ambiente extends JFrame {
             }
             switch (type){
                 case "tree":
+                    startTime = System.nanoTime();
                     suggestions = tree.suggest(text[text.length-1], 3);
+                    System.out.println("Sugestões tree -> " + suggestions + " / Size -> " + suggestions.size());
+                    resultTime.setText("Time: " + (System.nanoTime() - startTime) / 1000000 + "ms");
                     break;
                 default:
-                    suggestions = trie.missspelledAutocomplete(text[text.length-1]);
-                    System.out.println(suggestions);
+                    startTime = System.nanoTime();
+                    suggestions = trie.missspelledAutocomplete(text[text.length-1] , 20);
+                    System.out.println("Sugestões trie -> " + suggestions + " / Size -> " + suggestions.size());
+                    resultTime.setText("Time: " + (System.nanoTime() - startTime) / 1000000 + "ms");
                     break;
             }
         }
@@ -175,7 +183,6 @@ public class Ambiente extends JFrame {
             });
 
             suggestionPanel.add(lbl);
-            resultTime.setText("Time: " + (System.nanoTime() - startTime) / 1000000 + "ms");
         }
 
 

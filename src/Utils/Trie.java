@@ -1,4 +1,4 @@
-package LearnUtils;
+package Utils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -7,11 +7,9 @@ import java.util.*;
 public class Trie {
 
     private final TrieNode root;
-    public int limit;
 
-    public Trie(int limit) {
+    public Trie() {
         root = new TrieNode();
-        this.limit = limit;
     }
 
     private static final Map<Character, List<Character>> neighbors = new HashMap<>();
@@ -66,7 +64,7 @@ public class Trie {
     }
 
 
-    public List<String> missspelledAutocomplete(String prefix) {
+    public List<String> missspelledAutocomplete(String prefix, int limit) {
         List<String> results = new ArrayList<>();
 
         if (prefix.isEmpty()) return results;
@@ -78,21 +76,26 @@ public class Trie {
 
         // Tenta encontrar palavras a partir dos vizinhos
         for (char c : candidates) {
-            if (results.size() >= limit) break;
-
             String newPrefix = c + prefix.substring(1);
 
-            List<String> partial = autocomplete(newPrefix);
+            List<String> partial = autocomplete(newPrefix, limit);
 
             for (String word : partial) {
-                if (results.size() >= limit) break;
-
                 if (!results.contains(word)) {
                     results.add(word);
                 }
             }
         }
-        return results;
+        if (limit == 0) {
+            return results.stream()
+                    .distinct()
+                    .toList();
+        }
+        else {
+            return results.stream()
+                    .distinct()
+                    .limit(limit).toList();
+        }
     }
 
 
@@ -116,7 +119,7 @@ public class Trie {
         return node.isWord;
     }
 
-    public List<String> autocomplete(String prefix) {
+    public List<String> autocomplete(String prefix, int limit) {
         List<String> results = new ArrayList<>();
 
         for (int len = prefix.length(); len >= 0; len--) {
@@ -127,6 +130,7 @@ public class Trie {
 
 
             boolean exists = true;
+
             for (char c : subPrefix.toCharArray()) {
                 node = node.children.get(c);
                 if (node == null) {
@@ -142,13 +146,11 @@ public class Trie {
                 }
             }
         }
-
-        return missspelledAutocomplete(prefix); // caso nao encontre nenhum, retorna a contar com as letras a volta
+        return missspelledAutocomplete(prefix, limit); // caso nao encontre nenhum, retorna a contar com as letras a volta
     }
 
     // Depth-first search
     private void dfs(TrieNode node, StringBuilder prefix, List<String> results) {
-        if (results.size() >= limit) return;
         if (node.isWord) results.add(prefix.toString());
         for (Map.Entry<Character, TrieNode> entry : node.children.entrySet()) {
             prefix.append(entry.getKey());

@@ -1,4 +1,4 @@
-package LearnUtils;
+package Utils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -6,7 +6,7 @@ import java.util.*;
 
 public class WordTree {
 
-    private WordNode root;
+    public WordNode root;
 
     public void insert(String word) {
         root = insertRec(root, word);
@@ -117,21 +117,15 @@ public class WordTree {
             }
         }
 
-        String finalPrefix = prefix;
-        return suggestions.stream()
-                .distinct() // remove duplicados
-                .sorted((a, b) -> {
-                    boolean aStarts = a.toLowerCase().startsWith(finalPrefix.toLowerCase());
-                    boolean bStarts = b.toLowerCase().startsWith(finalPrefix.toLowerCase());
+        if (limit == 0){
+            return suggestions;
+        }
+        else {
+            return suggestions.stream()
+                    .limit(limit)
+                    .toList();
 
-                    if (aStarts && !bStarts) return -1;
-                    if (!aStarts && bStarts) return 1;
-
-                    return a.compareToIgnoreCase(b);
-                })
-                .limit(3)
-                .toList();
-
+        }
     }
 
     public List<WordNode> searchAll(String prefix) {
