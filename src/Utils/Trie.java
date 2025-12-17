@@ -67,7 +67,7 @@ public class Trie {
     }
 
 
-    public List<String> missspelledAutocomplete(String prefix, int limit) {
+    public List<String> autocomplete(String prefix, int limit) {
         prefix = prefix.toLowerCase();
         List<String> results = new ArrayList<>();
         if (prefix.isEmpty()) return results;
@@ -129,24 +129,6 @@ public class Trie {
         return node.isWord;
     }
 
-    public List<String> autocomplete(String prefix, int limit) {
-        List<String> results = new ArrayList<>();
-
-        for (int len = prefix.length(); len >= 0; len--) {
-
-            String subPrefix = prefix.substring(0, len);
-
-            TrieNode node = root;
-
-
-            for (char c : prefix.toCharArray()) {
-                node = node.children.get(c);
-                if (node == null) return results;
-            }
-
-        }
-        return results; // caso nao encontre nenhum, retorna a contar com as letras a volta
-    }
 
     // Depth-first search
     private void dfsWithLimit(TrieNode node,
