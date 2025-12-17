@@ -130,7 +130,7 @@ public class Trie {
     }
 
 
-    // Depth-first search
+    // Depth-first search com limite
     private void dfsWithLimit(TrieNode node,
                               StringBuilder sb,
                               List<String> results,

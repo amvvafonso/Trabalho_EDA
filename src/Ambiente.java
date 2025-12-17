@@ -156,13 +156,13 @@ public class Ambiente extends JFrame {
             switch (type){
                 case "tree":
                     startTime = System.nanoTime();
-                    suggestions = tree.suggest(text[text.length-1], 0);
+                    suggestions = tree.suggest(text[text.length-1], 3);
                     System.out.println("Sugestões tree -> " + suggestions + " / Size -> " + suggestions.size());
                     resultTime.setText("Time: " + (System.nanoTime() - startTime) / 1000000 + "ms");
                     break;
                 default:
                     startTime = System.nanoTime();
-                    suggestions = trie.autocomplete(text[text.length-1] , 0);
+                    suggestions = trie.autocomplete(text[text.length-1] , 3);
                     System.out.println("Sugestões trie -> " + suggestions + " / Size -> " + suggestions.size());
                     resultTime.setText("Time: " + (System.nanoTime() - startTime) / 1000000 + "ms");
                     break;
